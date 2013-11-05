@@ -75,17 +75,18 @@ def countdown_alarm_points(seconds):
     return alarms
 
 pluralization_table = {
-    'week': 'weeks',
-    'day': 'days',
-    'hour': 'hours',
-    'minute': 'minutes',
-    'second': 'seconds'
+    'week': (_('week'), _('weeks')),
+    'day': (_('day'), _('days')),
+    'hour': (_('hour'), _('hours')),
+    'minute': (_('minute'), _('minutes')),
+    'second': (_('second'), _('seconds')),
 }
 
 
 def format_unit(val, unit):
-    if val != 1 and unit in pluralization_table:
-        unit = pluralization_table[unit]
+    if unit in pluralization_table:
+        idx = 0 if val == 1 else 1
+        unit = pluralization_table[unit][idx]
     return '{} {}'.format(val, unit)
 
 
