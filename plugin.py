@@ -92,7 +92,9 @@ def format_timedelta(delta, show_weeks=True, atom_joiner=None):
         atoms.append('{} minutes'.format(seconds // 60))
         seconds = seconds % 60
     if seconds:
-        atoms.append('{} seconds'.format(seconds // 60))
+        atoms.append('{} seconds'.format(seconds))
+    if not atoms:
+        raise ValueError('Time difference not great enough to be noted.')
     return atom_joiner(atoms)
 
 
