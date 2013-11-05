@@ -28,6 +28,7 @@
 
 ###
 from time import time
+from datetime import timedelta
 from functools import partial
 from itertools import imap, takewhile
 from supybot.commands import (
@@ -74,6 +75,27 @@ def countdown_alarm_points(seconds):
     return alarms
 
 
+def format_timedelta(delta, show_weeks=True, atom_joiner=None):
+    if atom_joiner is None:
+        atom_joiner = utils.str.commaAndify
+    days, seconds = delta.days, delta.seconds
+    atoms = []
+    if show_weeks and days // 7:
+        atoms.append('{} weeks'.format(days // 7))
+        days = days % 7
+    if days:
+        atoms.append('{} days'.format(days))
+    if seconds // 3600:
+        atoms.append('{} hours'.format(seconds // 3600))
+        seconds = seconds % 3600
+    if seconds // 60:
+        atoms.append('{} minutes'.format(seconds // 60))
+        seconds = seconds % 60
+    if seconds:
+        atoms.append('{} seconds'.format(seconds // 60))
+    return atom_joiner(atoms)
+
+
 class Countdown(callbacks.Plugin):
     def __init__(self, irc, *args, **kwargs):
         self.__parent = super(Countdown, self)
@@ -81,7 +103,8 @@ class Countdown(callbacks.Plugin):
 
     def _countdown_resp(self, irc, remaining_seconds, end_response):
         if remaining_seconds > 0:
-            irc.reply(utils.timeElapsed(remaining_seconds), prefixNick=False)
+            delta = timedelta(seconds=remaining_seconds)
+            irc.reply(format_timedelta(delta), prefixNick=False)
         else:
             irc.reply(end_response, prefixNick=False)
 
