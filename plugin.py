@@ -81,8 +81,7 @@ class Countdown(callbacks.Plugin):
 
     def _countdown_resp(self, irc, remaining_seconds, end_response):
         if remaining_seconds > 0:
-            msg = utils.timeElapsed(remaining_seconds, seconds=False)
-            irc.reply(msg, prefixNick=False)
+            irc.reply(utils.timeElapsed(remaining_seconds), prefixNick=False)
         else:
             irc.reply(end_response, prefixNick=False)
 
