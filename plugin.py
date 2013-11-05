@@ -74,6 +74,20 @@ def countdown_alarm_points(seconds):
     alarms.append(seconds)
     return alarms
 
+pluralization_table = {
+    'week': 'weeks',
+    'day': 'days',
+    'hour': 'hours',
+    'minute': 'minutes',
+    'second': 'seconds'
+}
+
+
+def format_unit(val, unit):
+    if val != 1 and unit in pluralization_table:
+        unit = pluralization_table[unit]
+    return '{} {}'.format(val, unit)
+
 
 def format_timedelta(delta, show_weeks=True, atom_joiner=None):
     if atom_joiner is None:
@@ -81,18 +95,18 @@ def format_timedelta(delta, show_weeks=True, atom_joiner=None):
     days, seconds = delta.days, delta.seconds
     atoms = []
     if show_weeks and days // 7:
-        atoms.append('{} weeks'.format(days // 7))
+        atoms.append(format_unit(days // 7, 'week'))
         days = days % 7
     if days:
-        atoms.append('{} days'.format(days))
+        atoms.append(format_unit(days, 'day'))
     if seconds // 3600:
-        atoms.append('{} hours'.format(seconds // 3600))
+        atoms.append(format_unit(seconds // 3600, 'hour'))
         seconds = seconds % 3600
     if seconds // 60:
-        atoms.append('{} minutes'.format(seconds // 60))
+        atoms.append(format_unit(seconds // 60, 'minute'))
         seconds = seconds % 60
     if seconds:
-        atoms.append('{} seconds'.format(seconds))
+        atoms.append(format_unit(seconds, 'second'))
     if not atoms:
         raise ValueError('Time difference not great enough to be noted.')
     return atom_joiner(atoms)
