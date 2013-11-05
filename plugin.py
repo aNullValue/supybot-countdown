@@ -105,17 +105,19 @@ class Countdown(callbacks.Plugin):
         else:
             irc.reply(end_response, prefixNick=False)
 
-    @decowrap(['positiveInt'])
-    def countdown(self, irc, msg, args, seconds):
-        """<seconds>
+    @decowrap(['positiveInt', additional('text')])
+    def countdown(self, irc, msg, args, seconds, final_message=None):
+        """<seconds> [final_message]
 
         Counts down
         """
+        if final_message is None:
+            final_message = 'GO!'
         now = time()
         callback_part = partial(self._countdown_resp, irc)
         for alarm_point in countdown_alarm_points(seconds):
             schedule.addEvent(
-                partial(callback_part, alarm_point, "GO!"),
+                partial(callback_part, alarm_point, final_message),
                 now + seconds - alarm_point)
 
 
