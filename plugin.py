@@ -32,6 +32,7 @@ from time import time
 from functools import partial
 from itertools import imap, takewhile
 from supybot.commands import (
+    additional,
     world,
     wrap
 )
@@ -100,9 +101,9 @@ class Countdown(callbacks.Plugin):
 
     def _countdown_resp(self, irc, remaining_seconds, end_response):
         if remaining_seconds > 0:
-            irc.reply(utils.timeElapsed(remaining_seconds))
+            irc.reply(utils.timeElapsed(remaining_seconds), prefixNick=False)
         else:
-            irc.reply(end_response)
+            irc.reply(end_response, prefixNick=False)
 
     @decowrap(['positiveInt'])
     def countdown(self, irc, msg, args, seconds):
