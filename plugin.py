@@ -28,17 +28,13 @@
 
 ###
 from time import time
-#from datetime import datetime
 from functools import partial
 from itertools import imap, takewhile
 from supybot.commands import (
     additional,
-    world,
     wrap
 )
 import supybot.utils as utils
-#import supybot.plugins as plugins
-#import supybot.ircutils as ircutils
 import supybot.schedule as schedule
 import supybot.callbacks as callbacks
 try:
@@ -79,25 +75,9 @@ def countdown_alarm_points(seconds):
 
 
 class Countdown(callbacks.Plugin):
-    """Add the help for "@plugin help Countdown" here
-    This should describe *how* to use this plugin."""
     def __init__(self, irc, *args, **kwargs):
         self.__parent = super(Countdown, self)
         self.__parent.__init__(irc, *args, **kwargs)
-        self.events = {}
-        self._restore_events(irc)
-        world.flushers.append(self._flush)
-
-    def _restore_events(self, irc):
-        pass
-
-    def _flush(self):
-        pass
-
-    def die(self):
-        self._flush()
-        world.flushers.remove(self._flush)
-        self.__parent.die()
 
     def _countdown_resp(self, irc, remaining_seconds, end_response):
         if remaining_seconds > 0:
