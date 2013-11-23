@@ -27,6 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 ###
+import socket
 from time import time
 from datetime import timedelta
 from functools import partial
@@ -44,7 +45,7 @@ try:
 except:
     # Placeholder that allows to run the plugin on a bot
     # without the i18n module
-    _ = lambda x:  x
+    _ = lambda x: x
 
 
 def decowrap(*args, **kwargs):
@@ -117,6 +118,36 @@ class Countdown(callbacks.Plugin):
     def __init__(self, irc, *args, **kwargs):
         self.__parent = super(Countdown, self)
         self.__parent.__init__(irc, *args, **kwargs)
+        self._resolved = {}
+        self._destination_ips = [
+            ('::ffff:225.0.0.1', 5551),
+            ('::ffff:24.4.154.5', 15555),
+            ('ff02::1', 5551),
+        ]
+        self._destination_hosts = [
+            ('hidoi.moebros.org', 15555),
+        ]
+
+    def _populate_resolved(self):
+        for dest in self._destination_hosts:
+            try:
+                if dest[0] not in self._resolved:
+                    self._resolved[dest[0]] = \
+                        '::ffff:' + socket.gethostbyname(dest[0])
+            except socket.gaierror:
+                pass
+
+    def _destinations(self):
+        for host, post in self._destination_ips:
+            yield host, post
+        for host, port in self._destination_hosts:
+            yield self._resolved[host], port
+
+    def _send_go_packets(self):
+        sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+        for dest in self._destinations():
+            print "sending to %r" % (dest, )
+            sock.sendto('GO!', 0, dest)
 
     def _countdown_resp(self, irc, remaining_seconds, end_response):
         if remaining_seconds > 0:
@@ -124,6 +155,7 @@ class Countdown(callbacks.Plugin):
             irc.reply(format_timedelta(delta), prefixNick=False)
         else:
             irc.reply(end_response, prefixNick=False)
+            self._send_go_packets()
 
     @decowrap(['positiveInt', additional('text')])
     def countdown(self, irc, msg, args, seconds, final_message=None):
@@ -139,7 +171,7 @@ class Countdown(callbacks.Plugin):
             schedule.addEvent(
                 partial(callback_part, alarm_point, final_message),
                 now + seconds - alarm_point)
-
+        self._populate_resolved()
 
 Class = Countdown
 
