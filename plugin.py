@@ -131,9 +131,8 @@ class Countdown(callbacks.Plugin):
     def _populate_resolved(self):
         for dest in self._destination_hosts:
             try:
-                if dest[0] not in self._resolved:
-                    self._resolved[dest[0]] = \
-                        '::ffff:' + socket.gethostbyname(dest[0])
+                self._resolved[dest[0]] = \
+                    '::ffff:' + socket.gethostbyname(dest[0])
             except socket.gaierror:
                 pass
 
