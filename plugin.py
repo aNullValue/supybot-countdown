@@ -126,7 +126,7 @@ class Countdown(callbacks.Plugin):
         ]
         self._destination_hosts = [
             ('hidoi.moebros.org', 15555),
-            ('me.cwma.mw', 15555)
+            ('me.cwma.me', 15555)
         ]
 
     def _populate_resolved(self):
