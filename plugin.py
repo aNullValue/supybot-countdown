@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 ###
-import socket
+from gevent import socket
 from time import time
 from datetime import timedelta
 from functools import partial
@@ -126,6 +126,7 @@ class Countdown(callbacks.Plugin):
         ]
         self._destination_hosts = [
             ('hidoi.moebros.org', 15555),
+            ('me.cwma.mw', 15555)
         ]
 
     def _populate_resolved(self):
@@ -166,11 +167,12 @@ class Countdown(callbacks.Plugin):
             final_message = 'GO!'
         now = time()
         callback_part = partial(self._countdown_resp, irc)
+        trigger_resolve_at = now + seconds - min(seconds, 3)
+        schedule.addEvent(self._populate_resolved, trigger_resolve_at)
         for alarm_point in countdown_alarm_points(seconds):
             schedule.addEvent(
                 partial(callback_part, alarm_point, final_message),
                 now + seconds - alarm_point)
-        self._populate_resolved()
 
 Class = Countdown
 
