@@ -27,11 +27,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 ###
-from gevent import socket
 from time import time
 from datetime import timedelta
 from functools import partial
-from itertools import imap, takewhile
+from itertools import takewhile
 from supybot.commands import (
     additional,
     wrap
@@ -47,19 +46,16 @@ except:
     # without the i18n module
     _ = lambda x: x
 
-
 def decowrap(*args, **kwargs):
     def decorator(func):
         return wrap(func, *args, **kwargs)
     return decorator
-
 
 def fib():
     a, b = 0, 1
     while True:
         yield a
         a, b = b, a + b
-
 
 def modfib():
     fibiter = fib()
@@ -68,10 +64,9 @@ def modfib():
     while True:
         yield next(fibiter)
 
-
 def countdown_alarm_points(seconds):
     rounder = lambda x: x - (x % 30 if x > 120 else 0)
-    alarms = list(imap(rounder, takewhile(lambda x: x < seconds, modfib())))
+    alarms = list(map(rounder, takewhile(lambda x: x < seconds, modfib())))
     alarms.append(seconds)
     return alarms
 
@@ -83,13 +78,11 @@ pluralization_table = {
     'second': (_('second'), _('seconds')),
 }
 
-
 def format_unit(val, unit):
     if unit in pluralization_table:
         idx = 0 if val == 1 else 1
         unit = pluralization_table[unit][idx]
     return '{} {}'.format(val, unit)
-
 
 def format_timedelta(delta, show_weeks=True, atom_joiner=None):
     if atom_joiner is None:
@@ -113,41 +106,11 @@ def format_timedelta(delta, show_weeks=True, atom_joiner=None):
         raise ValueError('Time difference not great enough to be noted.')
     return atom_joiner(atoms)
 
-
 class Countdown(callbacks.Plugin):
     def __init__(self, irc, *args, **kwargs):
         self.__parent = super(Countdown, self)
         self.__parent.__init__(irc, *args, **kwargs)
         self._resolved = {}
-        self._destination_ips = [
-            ('::ffff:225.0.0.1', 5551),
-            ('::ffff:24.4.154.5', 15555),
-            ('ff02::1', 5551),
-        ]
-        self._destination_hosts = [
-            ('hidoi.moebros.org', 15555),
-            ('me.cwma.me', 15555)
-        ]
-
-    def _populate_resolved(self):
-        for dest in self._destination_hosts:
-            try:
-                self._resolved[dest[0]] = \
-                    '::ffff:' + socket.gethostbyname(dest[0])
-            except socket.gaierror:
-                pass
-
-    def _destinations(self):
-        for host, post in self._destination_ips:
-            yield host, post
-        for host, port in self._destination_hosts:
-            yield self._resolved[host], port
-
-    def _send_go_packets(self):
-        sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-        for dest in self._destinations():
-            print "sending to %r" % (dest, )
-            sock.sendto('GO!', 0, dest)
 
     def _countdown_resp(self, irc, remaining_seconds, end_response):
         if remaining_seconds > 0:
@@ -155,7 +118,6 @@ class Countdown(callbacks.Plugin):
             irc.reply(format_timedelta(delta), prefixNick=False)
         else:
             irc.reply(end_response, prefixNick=False)
-            self._send_go_packets()
 
     @decowrap(['positiveInt', additional('text')])
     def countdown(self, irc, msg, args, seconds, final_message=None):
@@ -175,6 +137,5 @@ class Countdown(callbacks.Plugin):
                 now + seconds - alarm_point)
 
 Class = Countdown
-
 
 # vim:set shiftwidth=4 softtabstop=4 expandtab textwidth=79:
